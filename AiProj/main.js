@@ -1,29 +1,65 @@
-import brain from 'brain.js';
-import data from './public/data.csv';
+import { recurrent } from 'brain.js';
+const { LSTM } = recurrent;
 
-const net = new brain.NeuralNetwork({ activation: 'relu' });
+// Function to parse CSV data
+const parseCSV = function(content) {
+    const lines = content.split('\n');
+    const headers = lines[0].split(',');
 
-fetch(data)
-  .then(response => response.text())
-  .then(csvData => {
-    const csvRows = csvData.split('\n');
-    const headers = csvRows.shift().split(',');
-    const trainingData = csvRows.map(row => {
-      const values = row.split(',');
-      const input = values.slice(0, -1).map(parseFloat); // Extract inputs except the last column
-      const output = [parseFloat(values[values.length - 1])]; // Extract the last column as output
-      return { input, output };
-    });
+    const data = [];
+    for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',');
 
-    net.train(trainingData, { log: true, errorThresh: 0.01 });
+        if (values.length !== headers.length) {
+            console.error(`Line ${i + 1} does not match the header length. Skipping.`);
+            continue;
+        }
 
-    const inputBoxes = document.querySelectorAll('.input-box');
-    const outputBox = document.getElementById('output-box');
-    const predictButton = document.getElementById('predict-button');
+        const personData = {};
+        for (let j = 0; j < headers.length; j++) {
+            personData[headers[j]] = values[j];
+        }
 
-    predictButton.addEventListener('click', () => {
-      const input = Array.from(inputBoxes).map(box => parseFloat(box.value));
-      const result = net.run(input);
-      outputBox.value = result.toFixed(2);
-    });
-  });
+        data.push(personData);
+    }
+
+    return data;
+};
+
+// Fetch data from CSV file
+fetch('./public/data.csv')
+    .then(response => response.text())
+    .then(trainContent => {
+        // Parse CSV data
+        const trainData = parseCSV(trainContent);
+
+        console.log('Got ' + trainData.length + ' samples');
+
+        // Create LSTM network
+        const net = new LSTM({ hiddenLayers: [20, 10] }); // Adjust hidden layers as needed
+
+        // Train the network
+        net.train(trainData, {
+            errorThresh: 0.025,
+            iterations: 100, // Limit iterations to 100
+            log: true,
+            logPeriod: 1,
+            learningRate: 0.1
+        });
+
+        // Function to generate output based on input
+        const generateOutput = input => {
+            const output = net.run(input);
+            // Assuming output is an array of probabilities, find the index with maximum probability
+            const maxIndex = output.indexOf(Math.max(...output));
+            // Assuming you have an array of words, return the word corresponding to the maxIndex
+            return wordsArray[maxIndex];
+        };
+
+        // Example input
+        const exampleInput = ["Yes","Female","BCA",147,20,70,59,58,"Reading books","1 - 2 Hour","Anytime",1500000,"No","50%","1.30 - 2 hour","0 - 30 minutes","Bad","good","No"];
+        // Generate output based on example input
+        const output = generateOutput(exampleInput);
+        console.log('Output:', output); // Output should be a word
+    })
+    .catch(err => console.log('Error:', err));
