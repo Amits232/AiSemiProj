@@ -15,12 +15,13 @@ const parseCSV = function(content) {
             continue;
         }
 
-        const personData = {};
-        for (let j = 0; j < headers.length; j++) {
-            personData[headers[j]] = values[j];
-        }
+        // Assuming the last value is the output/target
+        const output = values.pop();
 
-        data.push(personData);
+        // Convert numerical values to numbers
+        const numericalValues = values.map(val => isNaN(parseFloat(val)) ? val : parseFloat(val));
+
+        data.push({ input: numericalValues, output });
     }
 
     return data;
@@ -36,8 +37,7 @@ fetch('./public/data.csv')
         console.log('Got ' + trainData.length + ' samples');
 
         // Create LSTM network
-        const net = new LSTM({ hiddenLayers: [20, 10] }); // Adjust hidden layers as needed
-
+        let net = new LSTM({ hiddenLayers: [20, 10] });
         // Train the network
         net.train(trainData, {
             errorThresh: 0.025,
@@ -50,14 +50,11 @@ fetch('./public/data.csv')
         // Function to generate output based on input
         const generateOutput = input => {
             const output = net.run(input);
-            // Assuming output is an array of probabilities, find the index with maximum probability
-            const maxIndex = output.indexOf(Math.max(...output));
-            // Assuming you have an array of words, return the word corresponding to the maxIndex
-            return wordsArray[maxIndex];
+            return output;
         };
 
         // Example input
-        const exampleInput = ["Yes","Female","BCA",147,20,70,59,58,"Reading books","1 - 2 Hour","Anytime",1500000,"No","50%","1.30 - 2 hour","0 - 30 minutes","Bad","good","No"];
+        const exampleInput = [0.5, 0.7, 0.2, 0.4]; // Update with appropriate numerical values
         // Generate output based on example input
         const output = generateOutput(exampleInput);
         console.log('Output:', output); // Output should be a word
