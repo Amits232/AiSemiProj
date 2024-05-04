@@ -1,72 +1,82 @@
 import { recurrent } from 'brain.js';
 const { LSTM } = recurrent;
-// Create LSTM network
-let net = new LSTM({ hiddenLayers: [20, 10] });
+
 // Function to parse CSV data
-const parseCSV = function (content) {
-  const predictButton = document.getElementById('predict-button');
-  predictButton.addEventListener('click', () => {
-    const inputElems = document.querySelectorAll('input-box');
-    const inputValues = Array.from(inputElems).map(input => parseFloat(input.value));
-    const output = net.run(inputValues);
-    const outputElem = document.getElementById('output-box');
-    console.log("output: " + output);
+const parseCSV = (content) => {
+  const lines = content.split('\n').slice(1);
+  return lines.map((line) => {
+    const values = line.split(',');
+    // Assuming the last value is the output (word label)
+    const output = values.pop().trim(); // Remove any leading/trailing whitespace
+    const input = values.map(val => isNaN(val) ? val.trim() : parseFloat(val)); // Parse numbers, leave non-numeric values as strings
+    return { input, output };
   });
-
-  const lines = content.split('\n');
-  const headers = lines[0].split(',');
-
-  const data = [];
-  for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',');
-
-    if (values.length !== headers.length) {
-      console.error(`Line ${i + 1} does not match the header length. Skipping.`);
-      continue;
-    }
-
-    // Assuming the last value is the output/target
-    const output = values.pop();
-
-    // Convert numerical values to numbers
-    const numericalValues = values.map(val => isNaN(parseFloat(val)) ? val : parseFloat(val));
-
-    data.push({ input: numericalValues, output });
-  }
-
-  return data;
 };
 
-// Fetch data from CSV file
+let net;
+
+// Train the network
 fetch('./public/data.csv')
-  .then(response => response.text())
-  .then(trainContent => {
-    // Parse CSV data
-    const trainData = parseCSV(trainContent);
+  .then(res => res.text())
+  .then(content => {
+    const trainData = parseCSV(content);
+    console.log(`Got ${trainData.length} samples`);
 
-    console.log('Got ' + trainData.length + ' samples');
-
-
-    // Train the network
+    net = new LSTM({ hiddenLayers: [20, 10] });
     net.train(trainData, {
-      errorThresh: 0.025,
-      iterations: 10, // Limit iterations to 100
+      errorThresh: 0.06,
+      iterations: 20,
       log: true,
       logPeriod: 1,
-      learningRate: 0.1
+      learningRate: 0.3,
+      gpu: true,
     });
-
-    // Function to generate output based on input
-    const generateOutput = input => {
-      const output = net.run(input);
-      console.log('Output:', output);
-      return output;
-    };
-
-    // Example input
-    const exampleInput = [0.5, 0.7, 0.2, 0.4]; // Update with appropriate numerical values
-    // Generate output based on example input
-    const output = generateOutput(exampleInput);
-    console.log('Output:', output); // Output should be a word
   })
-  .catch(err => console.log('Error:', err));
+  .catch(err => console.log('Error:', err.message));
+
+// Function to generate output based on input
+function generateOutput(input) {
+  if (!net) {
+    console.error('Network is not initialized');
+    return;
+  }
+  const output = net.run(input);
+  console.log('Output:', output);
+  return output;
+}
+
+document.getElementById('predict-button').addEventListener('click', () => {
+  const inputs = getInputs();
+  const output = generateOutput(inputs);
+  const outputBox = document.getElementById('output-box');
+  outputBox.textContent = output;
+});
+
+function getInputs() {
+  const inputs = {};
+  const inputFields = document.querySelectorAll('.input-box');
+  const selectFields = document.querySelectorAll('select');
+
+  inputFields.forEach((field) => {
+    const id = field.id;
+    const value = field.type === 'number' ? parseFloat(field.value) : field.value;
+    inputs[id] = value;
+  });
+
+  selectFields.forEach((field) => {
+    const id = field.id;
+    const selectedOptions = field.selectedOptions;
+
+    if (selectedOptions.length === 1) {
+      inputs[id] = selectedOptions[0].value;
+    } else {
+      const values = [];
+      for (let i = 0; i < selectedOptions.length; i++) {
+        values.push(selectedOptions[i].value);
+      }
+      inputs[id] = values;
+    }
+  });
+
+  return inputs;
+}
