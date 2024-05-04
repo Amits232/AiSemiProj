@@ -1,13 +1,103 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/main.js"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/brain.js"></script>
+</head>
+<body>
+    <div>
+        <label for="Certification_Course">Certification Course: (Yes/No)</label>
+        <input class="input-box" type="text" id="Certification_Course" name="Certification_Course">
+    </div>
+    <div>
+        <label for="Gender">Gender: (Male/Female)</label>
+        <input class="input-box" type="text" id="Gender" name="Gender">
+    </div>
+    <div>
+        <label for="Height">Height(CM):</label>
+        <input class="input-box" type="number" id="Height" name="Height">
+    </div>
+    <div>
+        <label for="Weight">Weight(KG):</label>
+        <input class="input-box" type="number" id="Weight" name="Weight">
+    </div>
+    <div>
+        <label for="10th_Mark">10th Mark:</label>
+        <input class="input-box" type="number" id="10th_Mark" name="10th_Mark">
+    </div>
+    <div>
+        <label for="12th_Mark">12th Mark:</label>
+        <input class="input-box" type="number" id="12th_Mark" name="12th_Mark">
+    </div>
+    <div>
+        <label for="college_mark">college mark:</label>
+        <input class="input-box" type="number" id="college_mark" name="college_mark">
+    </div>
+    <div>
+        <label for="hobbies">hobbies:</label>
+        <select class="input-box" id="hobbies" name="hobbies" multiple>
+            <option value="Video Games">Video Games</option>
+            <option value="Cinema">Cinema</option>
+            <option value="Reading books">Reading books</option>
+            <option value="Sports">Sports</option>
+        </select>
+    </div>
+    <div>
+        <label for="daily_studying_time">daily studing time: (*num* - *num* (Hours/Minutes))</label>
+        <input class="input-box" type="text" id="daily_studying_time" name="daily_studying_time">
+    </div>
+    <div>
+        <label for="prefer_to_study_in">prefer to study in:</label>
+        <select class="input-box" id="prefer_to_study_in" name="prefer_to_study_in">
+            <option value="Morning">Morning</option>
+            <option value="Anytime">Anytime</option>
+            <option value="Night">Night</option>
+        </select>
+    </div>
+    <div>
+        <label for="salary_expectation">salary expectation:</label>
+        <input class="input-box" type="number" id="salary_expectation" name="salary_expectation">
+    </div>
+    <div>
+        <label for="do_you_like_your_degree">Do you like your degree?:</label>
+        <select class="input-box" id="do_you_like_your_degree" name="do_you_like_your_degree">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select>
+    </div>
+    <div>
+        <label for="willingness_to_pursue_a_career_based_on_their_degree">willingness to pursue a career based on their degree: (Percent)</label>
+        <input class="input-box" type="number" id="willingness_to_pursue_a_career_based_on_their_degree" name="willingness_to_pursue_a_career_based_on_their_degree">
+    </div>
+    <div>
+        <label for="social_medai___video">social media & video: (*num* - *num* (Hours/Minutes))</label>
+        <input class="input-box" type="text" id="social_medai___video" name="social_medai___video">
+    </div>
+    <div>
+        <label for="Travelling_Time">Travelling Time: (*num* - *num* (Hours/Minutes))</label>
+        <input class="input-box" type="text" id="Travelling_Time" name="Travelling_Time">
+    </div>
+    <div>
+        <label for="Financial_Status">Financial Status:</label>
+        <select class="input-box" id="Financial_Status" name="Financial_Status">
+            <option value="Bad">Bad</option>
+            <option value="Good">Good</option>
+            <option value="Awful">Awful</option>
+            <option value="Fabulous">Fabulous</option>
+        </select>
+    </div>
+    <div>
+        <label for="part_time_job">part-time job:</label>
+        <select class="input-box" id="part_time_job" name="part_time_job">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select>
+    </div>
+    <button id="predict-button">Predict</button>
+    <output id="output-box"></output>
+    <script type="module" src="main.js"></script>
+</body>
 </html>
+
