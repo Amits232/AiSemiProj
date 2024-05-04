@@ -1,6 +1,3 @@
-import * as brain from 'brain.js';
-
-
 const brain = require('brain.js');
 const fs = require('fs');
 
@@ -16,26 +13,38 @@ fs.readFile('./public/data.csv', 'utf8', (err, data) => {
 
   // Prepare training data
   const trainingData = rows.map(row => ({
-    input: row.slice(0, -1).map(Number), // Assuming the last column is the output
-    output: [row[row.length - 1]] // Assuming the output is a single value
+    input: [
+      row[1] === 'Male' ? 1 : 0, // Gender
+      row[2] === 'BCA' ? 1 : 0, // Department
+      parseFloat(row[3]), // Height
+      parseFloat(row[4]), // Weight
+      parseInt(row[5]), // 10th Mark
+      parseInt(row[6]), // 12th Mark
+      parseFloat(row[8]), // Daily studying time (in hours)
+      row[9] === 'Morning' ? 1 : 0, // Prefer to study in morning
+      parseInt(row[16]), // Financial Status
+      row[17] === 'Yes' ? 1 : 0, // Part-time job
+      // Add more input features as needed
+    ],
+    output: [
+      parseFloat(row[15]), // Stress Level
+    ]
   }));
 
   // Define neural network architecture
   const net = new brain.NeuralNetwork({
-    // Define your architecture here
+    hiddenLayers: [3], // Define one hidden layer with 3 neurons
   });
 
   // Train the neural network
   net.train(trainingData);
 
-  // Save the trained model if needed
-  // const model = net.toJSON();
-  // fs.writeFileSync('model.json', JSON.stringify(model));
-
   // Use the trained model for predictions
-  const input = [/* Provide input values for prediction */];
+  const input = [
+    // Provide input values for prediction
+    // For example, if you want to predict the stress level of a new individual:
+    // [1, 1, 100, 58, 79, 64, 1.5, 1, 2, 1] // Sample input values for prediction
+  ];
   const output = net.run(input);
   console.log('Prediction:', output);
 });
-
-
