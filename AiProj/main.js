@@ -15,43 +15,65 @@ const parseCSV = (content) => {
 
 let net;
 
-// Train the network
+// Function to train the network
+const trainNetwork = (trainData) => {
+  net = new LSTM({ hiddenLayers: [20, 10] });
+  net.train(trainData, {
+    errorThresh: 0.06,
+    iterations: 1,
+    log: true,
+    logPeriod: 1,
+    learningRate: 0.3,
+    gpu: true,
+  });
+};
+
+// Function to generate output (predicted stress levels) for the entire dataset
+const generateOutputForDataset = (dataset, userInput) => {
+  if (!net) {
+    console.error('Network is not initialized');
+    return;
+  }
+
+  const userInputs = Object.values(userInput);
+
+  const stressLevels = dataset.map(data => {
+    const output = net.run(data.input);
+    let distance = 0;
+    for (let i = 0; i < userInputs.length; i++) {
+      distance += Math.abs(userInputs[i] - data.input[i]);
+    }
+    return { input: data.input, predictedStressLevel: output['Stress Level'], distance };
+  });
+
+  return stressLevels;
+};
+
+// Train the network and generate output on button click
 fetch('./public/data.csv')
   .then(res => res.text())
   .then(content => {
     const trainData = parseCSV(content);
     console.log(`Got ${trainData.length} samples`);
+    trainNetwork(trainData);
 
-    net = new LSTM({ hiddenLayers: [20, 10] });
-    net.train(trainData, {
-      errorThresh: 0.06,
-      iterations: 20,
-      log: true,
-      logPeriod: 1,
-      learningRate: 0.3,
-      gpu: true,
+    document.getElementById('predict-button').addEventListener('click', () => {
+      const inputs = getInputs();
+      const output = generateOutput(inputs, trainData);
+      const outputBox = document.getElementById('output-box');
+      outputBox.textContent = output;
     });
   })
   .catch(err => console.log('Error:', err.message));
 
 // Function to generate output based on input
-function generateOutput(input) {
-  if (!net) {
-    console.error('Network is not initialized');
-    return;
-  }
-  const output = net.run(input);
+function generateOutput(input, dataset) {
+  const output = generateOutputForDataset(dataset,input);
   console.log('Output:', output);
   return output;
 }
 
-document.getElementById('predict-button').addEventListener('click', () => {
-  const inputs = getInputs();
-  const output = generateOutput(inputs);
-  const outputBox = document.getElementById('output-box');
-  outputBox.textContent = output;
-});
-
+// Function to retrieve input data
 function getInputs() {
   const inputs = {};
   const inputFields = document.querySelectorAll('.input-box');
